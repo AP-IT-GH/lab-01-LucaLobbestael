@@ -2,120 +2,41 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class MapLocation       
-{
-    public int x;
-    public int z;
-
-    public MapLocation(int _x, int _z)
-    {
-        x = _x;
-        z = _z;
-    }
-
-    public Vector2 ToVector()
-    {
-        return new Vector2(x, z);
-    }
-
-    public static MapLocation operator +(MapLocation a, MapLocation b)
-       => new MapLocation(a.x + b.x, a.z + b.z);
-
-    public override bool Equals(object obj)
-    {
-        if ((obj == null) || !this.GetType().Equals(obj.GetType()))
-            return false;
-        else
-            return x == ((MapLocation)obj).x && z == ((MapLocation)obj).z;
-    }
-
-    public override int GetHashCode()
-    {
-        return 0;
-    }
-
-}
-
 public class Maze : MonoBehaviour
 {
-    public List<MapLocation> directions = new List<MapLocation>() {
-                                            new MapLocation(1,0),
-                                            new MapLocation(0,1),
-                                            new MapLocation(-1,0),
-                                            new MapLocation(0,-1) };
     public int width = 10; //x length
     public int depth = 10; //z length
-    public byte[,] map;
-    public int scale = 1;
+    public int[,] map;
 
     // Start is called before the first frame update
     void Start()
     {
-        InitialiseMap();
-        Generate(); // in comment is a maze without a wall
-        DrawMap();
+        GenerateMaze();
     }
 
-    void InitialiseMap()
+    public void GenerateMaze()
     {
-        map = new byte[width,depth];
-        for (int z = 0; z < depth; z++)
-            for (int x = 0; x < width; x++)
+        map = new int[width, depth];
+        for (int x = 0; x < width; x++)
+        {
+            for (int z = 0; z < depth; z++)
             {
-                    map[x, z] = 0;     //1 = wall  0 = corridor
-            }
-    }
-
-    public virtual void Generate()
-    {
-        for (int z = 0; z < depth; z++)
-            for (int x = 0; x < width; x++)
-            {
-              // if(Random.Range(0,100) < 50)
-              if(z == 3 && x >2 && x < 8)
-                 map[x, z] = 1;     //1 = wall  0 = corridor
-            }
-    }
-
-    void DrawMap()
-    {
-        for (int z = 0; z < depth; z++)
-            for (int x = 0; x < width; x++)
-            {
-                if (map[x, z] == 1)
+                map[x, z] = Random.Range(0,3) == 0 ? 1 : 0;
+                if (map[x,z] == 1)
                 {
-                    Vector3 pos = new Vector3(x * scale, 0, z * scale);
-                    GameObject wall = GameObject.CreatePrimitive(PrimitiveType.Cube);
-                    wall.transform.localScale = new Vector3(scale, scale, scale);
-                    wall.transform.position = pos;
+                    Instantiate(GameObject.CreatePrimitive(PrimitiveType.Cube));
                 }
             }
+        }
     }
 
-    public int CountSquareNeighbours(int x, int z)
+    public List<MapLocation> GetNeighbours(MapLocation loc)
     {
-        int count = 0;
-        if (x <= 0 || x >= width - 1 || z <= 0 || z >= depth - 1) return 5;
-        if (map[x - 1, z] == 0) count++;
-        if (map[x + 1, z] == 0) count++;
-        if (map[x, z + 1] == 0) count++;
-        if (map[x, z - 1] == 0) count++;
-        return count;
-    }
-
-    public int CountDiagonalNeighbours(int x, int z)
-    {
-        int count = 0;
-        if (x <= 0 || x >= width - 1 || z <= 0 || z >= depth - 1) return 5;
-        if (map[x - 1, z - 1] == 0) count++;
-        if (map[x + 1, z + 1] == 0) count++;
-        if (map[x - 1, z + 1] == 0) count++;
-        if (map[x + 1, z - 1] == 0) count++;
-        return count;
-    }
-
-    public int CountAllNeighbours(int x, int z)
-    {
-        return CountSquareNeighbours(x,z) + CountDiagonalNeighbours(x,z);
+        List<MapLocation> neighbours = new List<MapLocation>();
+        if (loc.x > 0 && map[loc.x - 1, loc.z] == 0)neighbours.Add(new MapLocation(loc.x - 1, loc.z));
+        if (loc.x < width -1 && map[loc.x+1,loc.z] == 0)neighbours.Add(new MapLocation(loc.x + 1, loc.z));
+        if (loc.z > 0 && map[loc.x, loc.z -1] == 0)neighbours.Add(new MapLocation(loc.x, loc.z - 1));
+        if (loc.z < depth -1 && map[loc.x, loc.z +1] == 0)neighbours.Add(new MapLocation(loc.x, loc.z + 1));
+        return neighbours;
     }
 }
