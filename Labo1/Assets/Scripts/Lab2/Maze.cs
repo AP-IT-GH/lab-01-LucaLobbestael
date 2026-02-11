@@ -4,11 +4,10 @@ using UnityEngine;
 
 public class Maze : MonoBehaviour
 {
-    public int width = 10; //x length
-    public int depth = 10; //z length
+    public int width = 10;
+    public int depth = 10; 
     public int[,] map;
 
-    // Start is called before the first frame update
     void Start()
     {
         GenerateMaze();
